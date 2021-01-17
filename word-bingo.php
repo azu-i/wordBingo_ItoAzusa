@@ -11,8 +11,16 @@ $col_judge = getColJudge($bingo_size, $bingo_card_checked);
 $final_judge = getFinalJudge($row_judge, $diagonal_judge1, $diagonal_judge2, $col_judge);
 echo in_array("bingo", $final_judge) ? "yes" : "no";
 
-
-
+// ★ビンゴカードの単語が選ばれているかの判定方法
+// ビンゴカードにある単語を多次元配列のkey、valueは0で設定
+// カード内の単語が選ばれればvalueを1に変更
+// ex)2×2のカードの場合
+// 最初の設定
+// [0] => [apple=>0 , grape=>0]
+// [1] => [php=>0 , ruby=>0]
+// もしappleが選ばれた場合、下記に変更
+// [0] => [apple=>1 , grape=>0]
+// [1] => [php=>0 , ruby=>0]
 
 
 /*
