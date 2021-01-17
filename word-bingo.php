@@ -105,9 +105,9 @@ function getDiagonalJudge2($bingo_size, $bingo_card_after)
   return $diagonal_judge2;
 }  
 
-
 //縦の判定
-//
+//縦のライン毎に配列を作り値を足し算していく
+//それぞれの値がビンゴサイズとあっていればbingo判定
 function getColJudge($bingo_size, $bingo_card_after)
 {
   $col = array();
@@ -124,6 +124,7 @@ function getColJudge($bingo_size, $bingo_card_after)
   return $col_judge;
 }
 
+//横・縦・斜めのJudge結果を結合
 function getFinalJudge($row_judge, $diagonal_judge1, $diagonal_judge2, $col_judge)
 {
   $final_judge = [$row_judge, $diagonal_judge1, $diagonal_judge2, $col_judge];
