@@ -4,9 +4,9 @@ batch web cloud
 sql http https
 7
 web
-https
-windows
 batch
-keyboard
+windows
 apple
+keyboard
+sql
 cpu

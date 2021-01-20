@@ -1,16 +1,13 @@
 <?php
 
 $bingo_size = trim(fgets(STDIN));
-$bingo_card = getBingoCard($bingo_size);
-$selected_list = getSelectedList();
-$bingo_card_checked = checkCardSelected($bingo_size, $bingo_card, $selected_list);
-$row_judge = getRowJudge($bingo_size, $bingo_card_checked);
-$diagonal_judge1 = getDiagonalJudge1($bingo_size, $bingo_card_checked);
-$diagonal_judge2 = getDiagonalJudge2($bingo_size, $bingo_card_checked);
-$col_judge = getColJudge($bingo_size, $bingo_card_checked);
-$final_judge = getFinalJudge($row_judge, $diagonal_judge1, $diagonal_judge2, $col_judge);
-echo in_array("bingo", $final_judge) ? "yes" : "no";
-
+$bingo_card = initBingoCard($bingo_size);
+$selected_list = loadSelectedList();
+$bingo_card_checked = fillSelectedBingoCell($bingo_size, $bingo_card, $selected_list);
+$bingo_results = checkBingoEvaluations($bingo_size, $bingo_card_checked);
+$result = evaluateBingo($bingo_results);
+echo $result;
+echo "\n";
 
 // ★ビンゴカードの単語が選ばれているかの判定方法
 // ビンゴカードにある単語を多次元配列のkey、valueは0で設定
@@ -24,13 +21,14 @@ echo in_array("bingo", $final_judge) ? "yes" : "no";
 // [1] => [php=>0 , ruby=>0]
 
 
-/*
-*ビンゴカードのwordを配列に
-*ビンゴカードの各単語にまだ選ばれていない = 0を設定
-*@param $bingo_size        ビンゴのカードサイズ
-*@return $bingo_card array ビンゴカードの単語、0
-*/
-function getBingoCard($bingo_size)
+/**
+ * ビンゴカードのwordを配列に
+ * ビンゴカードの各単語にまだ選ばれていない = 0を設定
+ * 
+ * @param $bingo_size ビンゴのカードサイズ
+ * @return array ビンゴカードの単語、0
+ */
+function initBingoCard(int $bingo_size): array
 {
   $bingo_card = [];
   for ($i = 0; $i < $bingo_size; $i++) {
@@ -42,28 +40,31 @@ function getBingoCard($bingo_size)
   return $bingo_card;
 }
 
-/*選ばれたワードを配列に
-*@param
-*@return $selected_list array ビンゴで選ばれた単語一覧
-*/
-function getSelectedList()
+
+/**
+ * 選ばれたワードを配列に
+ * 
+ * @return array ビンゴで選ばれた単語一覧
+ */
+function loadSelectedList(): array
 {
   $num_selected = trim(fgets(STDIN));
-  $selected_list = array();
+  $selected_list = [];
   for ($i = 0; $i < $num_selected; $i++) {
     $selected_list[] = trim(fgets(STDIN));
   }
   return $selected_list;
 }
 
-/*
-*選ばれた単語がカードの単語と一致すれば各単語の連想配列valueを1に変更
-*@param $bingo_size             カードのサイズ  
-*@param $bingo_card_after array 選ばれた単語の判定後のビンゴカード
-*@param $selected_list    array 選ばれた単語の配列
-*@return $bingo_card      array カードの単語、登場した単語の配列のvalueは=1
-*/
-function checkCardSelected($bingo_size, $bingo_card, $selected_list)
+/**
+ * 選ばれた単語がカードの単語と一致すれば各単語の連想配列valueを1に変更
+ * 
+ * @param int $bingo_size カードのサイズ  
+ * @param array $bingo_card_after 選ばれた単語の判定後のビンゴカード
+ * @param array $selected_list 選ばれた単語の配列
+ * @return array カードの単語、登場した単語の配列のvalueは=1
+ */
+function fillSelectedBingoCell(int $bingo_size, array $bingo_card, array $selected_list): array
 {
   for ($i = 0; $i < $bingo_size; $i++) {
     for ($j = 0; $j < count($selected_list); $j++) {
@@ -75,53 +76,52 @@ function checkCardSelected($bingo_size, $bingo_card, $selected_list)
   return $bingo_card;
 }
 
-/*ビンゴ横列の判定
-*@param $bingo_size              カードのサイズ  
-*@param $bingo_card_after  array 選ばれた単語の判定後のビンゴカード
-*@return $row_judge              ビンゴになった横列があれば bingo
-*                                なければNull
-*/
-function getRowJudge($bingo_size, $bingo_card_checked)
+/**
+ * ビンゴ横列の判定
+ * 
+ * @param int $bingo_size カードのサイズ  
+ * @param array $bingo_card_after 選ばれた単語の判定後のビンゴカード
+ * @return bool true: ビンゴになった横列あった false: ビンゴになった横列なかった
+ */
+function judgeRowBingo(array $bingo_card_checked): bool
 {
-  $row_judge = [];
-  for ($i = 0; $i < $bingo_size; $i++) {
-    $selected_row = array_count_values($bingo_card_checked[$i]);
-    if ($selected_row[1] == $bingo_size) $row_judge = "bingo";
+  foreach ($bingo_card_checked as $bingo_row) {
+    $selected_row = array_count_values($bingo_row);
+    if (count($selected_row) === 1) return true;
   }
-  return $row_judge;
+  return false;
 }
 
-/*斜めに値するカードのマスの単語が選ばれている場合
-*判断基準となる$d_judge1へ1づつ足していく
-* $d_judge1の値がビンゴカードのサイズと合えばbingo
-*@param   $bingo_size              カードのサイズ  
-*@param   $bingo_card_after  array 選ばれた単語の判定後のビンゴカード
-*@return  $diagonal_judge1         ビンゴになった斜め列があれば bingo
-*                                  なければNull
-*/
-function getDiagonalJudge1($bingo_size, $bingo_card_checked)
+/**
+ * 斜めに値するカードのマスの単語が選ばれている場合
+ * 判断基準となる$d_judge1へ1づつ足していく
+ * $d_judge1の値がビンゴカードのサイズと合えばbingo
+ * 
+ * @param int $bingo_size カードのサイズ  
+ * @param array $bingo_card_checked 選ばれた単語の判定後のビンゴカード
+ * @return bool true: 斜め列がビンゴになった false: 斜め列がビンゴにならなかった
+ */
+function judgeDiagonalBingo(int $bingo_size, array $bingo_card_checked): bool
 {
   $diagonal_count1 = 0;
   foreach ($bingo_card_checked as $key1 => $value1) {
     $search_diagonal1 = array_slice($value1, $key1, 1);
     $d_judge1 = array_values($search_diagonal1);
     if ($d_judge1[0] == 1) {
-      $diagonal_count1 = $diagonal_count1 + 1;
+      $diagonal_count1++;
     }
   }
-  if ($diagonal_count1 == $bingo_size) {
-    $diagonal_judge1 = "bingo";
-  }
-  return $diagonal_judge1;
+  return ($diagonal_count1 == $bingo_size);
 }
 
-/* getDiagonalJudge1の反対側の斜め判定
-*@param   $bingo_size              カードのサイズ  
-*@param   $bingo_card_after  array 選ばれた単語の判定後のビンゴカード
-*@return  $diagonal_judge2         ビンゴになった斜め列があれば bingo
-*                                  なければNull
-*/
-function getDiagonalJudge2($bingo_size, $bingo_card_checked)
+/**
+ * getDiagonalJudge1の反対側の斜め判定
+ * 
+ * @param int $bingo_size カードのサイズ  
+ * @param array $bingo_card_checked 選ばれた単語の判定後のビンゴカード
+ * @return bool true: 斜め列がビンゴになった false: 斜め列がビンゴにならなかった
+ */
+function judgeDiagonalBingoReverse(int $bingo_size, array $bingo_card_checked): bool
 {
   $diagonal_count2 = 0;
   foreach ($bingo_card_checked as $key2 => $value2) {
@@ -129,27 +129,24 @@ function getDiagonalJudge2($bingo_size, $bingo_card_checked)
     $search_diagonal2 = array_slice($value_reverse, $key2, 1);
     $d_judge2 = array_values($search_diagonal2);
     if ($d_judge2[0] == 1) {
-      $diagonal_count2 = $diagonal_count2 + 1;
+      $diagonal_count2++;
     }
   }
-  if ($diagonal_count2 == $bingo_size) {
-    $diagonal_judge2 = "bingo";
-  }
-  return $diagonal_judge2;
+  return ($diagonal_count2 == $bingo_size);
 }
 
-/*
-*縦の判定
-*縦のライン毎に配列を作り値を足し算していく
-*それぞれの値がビンゴサイズとあっていればbingo判定
-*@param $bingo_size              カードのサイズ  
-*@param $bingo_card_after  array 選ばれた単語の判定後のビンゴカード
-*@return $col_judge              ビンゴになった縦列があれば bingo
-*                                なければNull 
-*/
-function getColJudge($bingo_size, $bingo_card_checked)
+/**
+ * 縦の判定
+ * 縦のライン毎に配列を作り値を足し算していく
+ * それぞれの値がビンゴサイズとあっていればbingo判定
+ * 
+ * @param int $bingo_size カードのサイズ  
+ * @param array $bingo_card_checked 選ばれた単語の判定後のビンゴカード
+ * @return bool true: 斜め列がビンゴになった false: 斜め列がビンゴにならなかった
+ */
+function judgeCol(int $bingo_size, array $bingo_card_checked): bool
 {
-  $col = array();
+  $col = [];
   foreach ($bingo_card_checked as $key3 => $value3) {
     for ($i = 0; $i < $bingo_size; $i++) {
       $search_col = array_slice($value3, $i, 1);
@@ -158,21 +155,37 @@ function getColJudge($bingo_size, $bingo_card_checked)
     }
   }
   for ($i = 0; $i < $bingo_size; $i++) {
-    if ($col[$i] == $bingo_size) $col_judge = "bingo";
+    if ($col[$i] == $bingo_size) return true;
   }
-  return $col_judge;
+  return false;
 }
 
-/*
-*横・縦・斜めのJudge結果を結合
-*@param $row_judge             ビンゴがあれば"bingo"なければNull
-*@param $diagonal_judge1       ビンゴがあれば"bingo"なければNull
-*@param $diagonal_judge2       ビンゴがあれば"bingo"なければNull
-*@param $col_judge             ビンゴがあれば"bingo"なければNull
-*@return $final_judge    array 縦横斜めの全結果 
-*/
-function getFinalJudge($row_judge, $diagonal_judge1, $diagonal_judge2, $col_judge)
+/**
+ * 縦横斜めのビンゴ有無を配列にまとめる
+ * 
+ * @param int $bingo_size カードのサイズ  
+ * @param array $bingo_card_checked 選ばれた単語の判定後のビンゴカード
+ * @return array 縦横斜めのビンゴ有無結果の配列 
+ */
+function checkBingoEvaluations(int $bingo_size, array $bingo_card_checked): array
 {
-  $final_judge = [$row_judge, $diagonal_judge1, $diagonal_judge2, $col_judge];
-  return $final_judge;
+  $bingo_evaluations = [];
+  $bingo_evaluations[] = judgeRowBingo($bingo_card_checked);
+  $bingo_evaluations[] = judgeDiagonalBingo($bingo_size, $bingo_card_checked);
+  $bingo_evaluations[] = judgeDiagonalBingoReverse($bingo_size, $bingo_card_checked);
+  $bingo_evaluations[] = judgeCol($bingo_size, $bingo_card_checked);
+  return $bingo_evaluations;
+}
+
+/**
+ *横・縦・斜めのJudge結果を結合
+ *
+ * @param 
+ * @return string ビンゴがあればyes  ビンゴなければnoを返す
+ */
+function evaluateBingo(array $bingo_results): string
+{
+  return in_array(true, $bingo_results, true)
+    ? "yes"
+    : "no";
 }
