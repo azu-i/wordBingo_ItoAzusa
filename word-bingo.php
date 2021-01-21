@@ -10,7 +10,7 @@ echo $result;
 echo "\n";
 
 // ★ビンゴカードの単語が選ばれているかの判定方法
-// 多次元配列ビンゴカードにある単語をkey、0をvalueで設定
+// 多次元配列でビンゴカードにある単語をkey、0をvalueで設定
 // カード内の単語が選ばれればvalueを1に変更
 // ex)2×2のカードの場合
 // 最初のカード設定($bingo_card)
@@ -22,8 +22,8 @@ echo "\n";
 
 
 /**
- * ビンゴか判定するビンゴカードのwordを配列にいれる
- * ビンゴカードの各単語にまだ選ばれていない = 0を設定
+ * ビンゴカードのwordを配列にいれる
+ * ビンゴカードの各単語にまだ選ばれていない単語 = 0を設定
  * 
  * @param int $bingo_size ビンゴのカードサイズ
  * @return array ビンゴカードの単語、0
@@ -115,7 +115,7 @@ function judgeDiagonalBingo(array $bingo_card_checked): bool
 
 /**
  * 斜め列がビンゴしているかの判定
- * judgeDiagonalBingoの反対側の斜め判定
+ * judgeDiagonalBingoの反対側の斜め列を判定
  * 判断基準となる$diagonal_count_reverseへ1づつ足していく
  * $diagonal_count_reverseの値がビンゴカードのサイズと合えばbingo
  *  
