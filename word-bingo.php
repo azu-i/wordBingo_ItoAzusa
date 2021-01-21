@@ -4,13 +4,13 @@ $bingo_size = trim(fgets(STDIN));
 $bingo_card = initBingoCard($bingo_size);
 $selected_list = loadSelectedList();
 $bingo_card_checked = fillSelectedBingoCell($bingo_size, $bingo_card, $selected_list);
-$bingo_results = checkBingoEvaluations($bingo_size, $bingo_card_checked);
+$bingo_results = checkBingoEvaluations($bingo_card_checked);
 $result = evaluateBingo($bingo_results);
 echo $result;
 echo "\n";
 
 // ★ビンゴカードの単語が選ばれているかの判定方法
-// ビンゴカードにある単語を多次元配列のkey、valueは0で設定
+// 多次元配列ビンゴカードにある単語をkey、0をvalueで設定
 // カード内の単語が選ばれればvalueを1に変更
 // ex)2×2のカードの場合
 // 最初のカード設定($bingo_card)
@@ -22,7 +22,7 @@ echo "\n";
 
 
 /**
- * ビンゴカードのwordを配列に
+ * ビンゴか判定するビンゴカードのwordを配列にいれる
  * ビンゴカードの各単語にまだ選ばれていない = 0を設定
  * 
  * @param int $bingo_size ビンゴのカードサイズ
@@ -42,7 +42,7 @@ function initBingoCard(int $bingo_size): array
 
 
 /**
- * 選ばれたワードを配列に
+ * 選ばれたワードを配列にいれる
  * 
  * @return array ビンゴで選ばれた単語一覧
  */
@@ -57,12 +57,12 @@ function loadSelectedList(): array
 }
 
 /**
- * 選ばれた単語がカードの単語と一致すれば各単語の連想配列valueを1に変更
+ * 選ばれた単語がカードの単語と一致すれば各単語のvalueを1に変更
  * 
  * @param int $bingo_size カードのサイズ  
  * @param array $bingo_card ビンゴカードの単語一覧
  * @param array $selected_list 選ばれた単語の配列
- * @return array カードの単語、登場した単語の配列のvalueは=1
+ * @return array カードの単語、登場した単語の配列のvalueは1,登場していない単語のvalueは0
  */
 function fillSelectedBingoCell(int $bingo_size, array $bingo_card, array $selected_list): array
 {
@@ -77,9 +77,9 @@ function fillSelectedBingoCell(int $bingo_size, array $bingo_card, array $select
 }
 
 /**
- * ビンゴ横列の判定
+ * 横列にビンゴがあるかの判定
  * 
- * @param array $bingo_card_checked 選ばれた単語の判定後のビンゴカード
+ * @param array $bingo_card_checked 選ばれた単語判定後のビンゴカード
  * @return bool true: ビンゴになった横列あった false: ビンゴになった横列なかった
  */
 function judgeRowBingo(array $bingo_card_checked): bool
@@ -92,11 +92,12 @@ function judgeRowBingo(array $bingo_card_checked): bool
 }
 
 /**
+ * 斜め列がビンゴしているかの判定
  * 斜めに値するカードのマスの単語が選ばれている場合
- * 判断基準となる$d_judge1へ1づつ足していく
- * $d_judge1の値がビンゴカードのサイズと合えばbingo
+ * 判断基準となる$diagonal_countへ1づつ足していく
+ * $diagonal_countの値がビンゴカードのサイズと合えばbingo
  * 
- * @param array $bingo_card_checked 選ばれた単語の判定後のビンゴカード
+ * @param array $bingo_card_checked 選ばれた単語判定後のビンゴカード
  * @return bool true: 斜め列がビンゴになった false: 斜め列がビンゴにならなかった
  */
 function judgeDiagonalBingo(array $bingo_card_checked): bool
@@ -113,9 +114,12 @@ function judgeDiagonalBingo(array $bingo_card_checked): bool
 }
 
 /**
- * getDiagonalJudge1の反対側の斜め判定
+ * 斜め列がビンゴしているかの判定
+ * judgeDiagonalBingoの反対側の斜め判定
+ * 判断基準となる$diagonal_count_reverseへ1づつ足していく
+ * $diagonal_count_reverseの値がビンゴカードのサイズと合えばbingo
  *  
- * @param array $bingo_card_checked 選ばれた単語の判定後のビンゴカード
+ * @param array $bingo_card_checked 選ばれた単語判定後のビンゴカード
  * @return bool true: 斜め列がビンゴになった false: 斜め列がビンゴにならなかった
  */
 function judgeDiagonalBingoReverse(array $bingo_card_checked): bool
@@ -133,12 +137,12 @@ function judgeDiagonalBingoReverse(array $bingo_card_checked): bool
 }
 
 /**
- * 縦の判定
- * 縦のライン毎に配列を作り値を足し算していく
- * それぞれの値がビンゴサイズとあっていればbingo判定
+ * 縦列にビンゴがあるかの判定
+ * 縦のライン毎に配列を作り、0か1かの値を足し算していく
+ * それぞれの列の足し算結果がビンゴサイズとあっていればbingo判定
  *  
- * @param array $bingo_card_checked 選ばれた単語の判定後のビンゴカード
- * @return bool true: 斜め列がビンゴになった false: 斜め列がビンゴにならなかった
+ * @param array $bingo_card_checked 選ばれた単語判定後のビンゴカード
+ * @return bool true: 縦列がビンゴになった false: 縦列がビンゴにならなかった
  */
 function judgeCol(array $bingo_card_checked): bool
 {
@@ -159,11 +163,10 @@ function judgeCol(array $bingo_card_checked): bool
 /**
  * 縦横斜めのビンゴ有無を配列にまとめる
  * 
- * @param int $bingo_size カードのサイズ  
  * @param array $bingo_card_checked 選ばれた単語の判定後のビンゴカード
  * @return array 縦横斜めのビンゴ有無結果の配列 
  */
-function checkBingoEvaluations(int $bingo_size, array $bingo_card_checked): array
+function checkBingoEvaluations(array $bingo_card_checked): array
 {
   $bingo_evaluations = [];
   $bingo_evaluations[] = judgeRowBingo($bingo_card_checked);
@@ -174,10 +177,10 @@ function checkBingoEvaluations(int $bingo_size, array $bingo_card_checked): arra
 }
 
 /**
- *横・縦・斜めのJudge結果を結合
+ * ビンゴがあったかどうか最終判定
  *
- * @param 
- * @return string ビンゴがあればyes  ビンゴなければnoを返す
+ * @param array $bingo_results 全列のビンゴ有無結果
+ * @return string いずれかの列にビンゴがあればyes ビンゴなければnoを返す
  */
 function evaluateBingo(array $bingo_results): string
 {
