@@ -104,8 +104,8 @@ function judgeDiagonalBingo(array $bingo_card_checked): bool
   $diagonal_count = 0;
   foreach ($bingo_card_checked as $key1 => $value1) {
     $search_diagonal = array_slice($value1, $key1, 1);
-    $d_judge = array_values($search_diagonal);
-    if ($d_judge[0] == 1) {
+    $diagonal_value = array_values($search_diagonal);
+    if ($diagonal_value[0] == 1) {
       $diagonal_count++;
     }
   }
@@ -124,8 +124,8 @@ function judgeDiagonalBingoReverse(array $bingo_card_checked): bool
   foreach ($bingo_card_checked as $key2 => $value2) {
     $value_reverse = array_reverse($value2);
     $search_diagonal_reverse = array_slice($value_reverse, $key2, 1);
-    $d_judge2 = array_values($search_diagonal_reverse);
-    if ($d_judge2[0] == 1) {
+    $diagonal_value_reverse = array_values($search_diagonal_reverse);
+    if ($diagonal_value_reverse[0] == 1) {
       $diagonal_count_reverse++;
     }
   }

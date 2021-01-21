@@ -1,12 +1,13 @@
-3
-apple orange cube
-batch web cloud
-sql http https
+4
+beer wine gin vodka
+beef chicken pork seafood
+ant bee ladybug beetle
+bear snake dog camel
 7
-web
-batch
-windows
-apple
-keyboard
-sql
-cpu
+be
+bear
+bee
+beef
+been
+beer
+beetle
