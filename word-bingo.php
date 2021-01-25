@@ -147,6 +147,9 @@ function judgeDiagonalBingoReverse(array $bingo_card_checked): bool
 function judgeCol(array $bingo_card_checked): bool
 {
   $col = [];
+  for ($i = 0; $i < count($bingo_card_checked); $i++) {
+    $col[$i] = 0;
+  }
   foreach ($bingo_card_checked as $key3 => $value3) {
     for ($i = 0; $i < count($bingo_card_checked); $i++) {
       $search_col = array_slice($value3, $i, 1);
